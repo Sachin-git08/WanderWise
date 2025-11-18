@@ -4,29 +4,27 @@ const fetch = (...args) =>
 async function forwardGeocode(location) {
   console.log("📍 Searching coordinates for:", location);
 
-  const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location)}`;
+  const accessKey = process.env.POSITIONSTACK_API_KEY;
 
-  const response = await fetch(url, {
-    headers: {
-      "User-Agent": "WanderWise/1.0 (your-email@example.com)",  // required!
-      "Accept-Language": "en"
-    }
-  });
+  const url = `http://api.positionstack.com/v1/forward?access_key=${accessKey}&query=${encodeURIComponent(location)}`;
+
+  const response = await fetch(url);
 
   if (!response.ok) {
-    console.log("Geocoding failed:", response.status);
-    throw new Error(`HTTP error! Status: ${response.status}`);
+    throw new Error(`PositionStack error! Status: ${response.status}`);
   }
 
   const data = await response.json();
 
-  if (!data || data.length === 0) {
+  if (!data || !data.data || data.data.length === 0) {
     throw new Error("Location not found");
   }
 
+  const place = data.data[0];
+
   return {
     type: "Point",
-    coordinates: [parseFloat(data[0].lon), parseFloat(data[0].lat)]
+    coordinates: [place.longitude, place.latitude]
   };
 }
 
