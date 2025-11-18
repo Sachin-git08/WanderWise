@@ -36,7 +36,7 @@ module.exports.createListing = async (req, res, next) => {
   try {
     const newListing = new Listing(req.body.listing);
 
-    console.log("📍 Searching coordinates for:", req.body.listing.location);
+    console.log("Searching coordinates for:", req.body.listing.location);
 
     // fetch geometry from OpenStreetMap (our new geocoder)
     const geometry = await forwardGeocode(req.body.listing.location);
