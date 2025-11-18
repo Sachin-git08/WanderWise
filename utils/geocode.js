@@ -1,4 +1,3 @@
-
 const fetch = (...args) =>
   import("node-fetch").then(({ default: fetch }) => fetch(...args));
 
@@ -8,16 +7,20 @@ async function forwardGeocode(location) {
   const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location)}`;
 
   const response = await fetch(url, {
-    headers: { "User-Agent": "WanderWise-App (Node.js Server)" }
+    headers: {
+      "User-Agent": "WanderWise/1.0 (your-email@example.com)",  // required!
+      "Accept-Language": "en"
+    }
   });
 
   if (!response.ok) {
+    console.log("Geocoding failed:", response.status);
     throw new Error(`HTTP error! Status: ${response.status}`);
   }
 
   const data = await response.json();
 
-  if (data.length === 0) {
+  if (!data || data.length === 0) {
     throw new Error("Location not found");
   }
 
