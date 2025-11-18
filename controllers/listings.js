@@ -7,7 +7,6 @@ module.exports.index = async (req, res) => {
   res.render("listings/index.ejs", { allListings });
 };
 
-
 // RENDER NEW LISTING FORM
 module.exports.renderNewForm = (req, res) => {
   res.render("listings/new.ejs");
@@ -37,27 +36,33 @@ module.exports.createListing = async (req, res, next) => {
   try {
     const newListing = new Listing(req.body.listing);
 
-    // 1. Geocode
+    console.log("📍 Searching coordinates for:", req.body.listing.location);
+
+    // fetch geometry from OpenStreetMap (our new geocoder)
     const geometry = await forwardGeocode(req.body.listing.location);
     newListing.geometry = geometry;
 
-    // 2. Image upload
+    // Image upload
     if (req.file) {
       newListing.image = {
         url: req.file.path,
         filename: req.file.filename
       };
+    } else {
+      newListing.image = {
+        url: "https://res.cloudinary.com/demo/image/upload/v1699549950/default_image.jpg",
+        filename: "default_image"
+      };
     }
 
-    // 3. Owner
     newListing.owner = req.user._id;
-
-    // 4. Save
     await newListing.save();
 
     req.flash("success", "New Listing Created!");
     res.redirect(`/listings/${newListing._id}`);
+
   } catch (err) {
+    console.error(err);
     req.flash("error", err.message);
     res.redirect("/listings");
   }
@@ -75,7 +80,6 @@ module.exports.renderEditForm = async (req, res) => {
 
   res.render("listings/edit.ejs", { listing });
 };
-
 
 // UPDATE LISTING
 module.exports.updateListing = async (req, res) => {
